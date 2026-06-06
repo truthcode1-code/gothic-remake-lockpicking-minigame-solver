@@ -210,6 +210,8 @@ h2 {
 
 .main-panel {
   display: grid;
+  overflow: auto;
+  scrollbar-width: thin;
 }
 
 .plate-controls {
@@ -237,11 +239,10 @@ h2 {
 .plate-board {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: repeat(var(--plate-count), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--plate-count), minmax(156px, 1fr));
   gap: clamp(6px, 1vh, 12px);
   min-height: 0;
-  height: 100%;
-  overflow: hidden;
+  padding-right: 4px;
 }
 
 .plate,
@@ -293,8 +294,7 @@ h2 {
 }
 
 .plate-pickers label {
-  display: grid;
-  gap: 8px;
+  display: block;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -307,7 +307,7 @@ h2 {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: oklch(14% 0.014 78);
+  background: linear-gradient(180deg, oklch(18% 0.018 84), oklch(12% 0.012 86));
 }
 
 .plate-motion::before {
@@ -318,8 +318,8 @@ h2 {
     90deg,
     transparent 0,
     transparent calc((100% / 13) - 1px),
-    oklch(43% 0.035 77 / 34%) calc((100% / 13) - 1px),
-    oklch(43% 0.035 77 / 34%) calc(100% / 13)
+    oklch(49% 0.028 86 / 38%) calc((100% / 13) - 1px),
+    oklch(49% 0.028 86 / 38%) calc(100% / 13)
   );
 }
 
@@ -350,27 +350,29 @@ h2 {
 .moving-plate span {
   display: grid;
   place-items: center;
-  border: 1px solid oklch(50% 0.035 77 / 72%);
+  border: 1px solid oklch(61% 0.055 66 / 86%);
   border-right: 0;
-  background: linear-gradient(180deg, oklch(32% 0.03 64), oklch(21% 0.02 72));
-  color: oklch(80% 0.02 78);
+  background: linear-gradient(180deg, oklch(43% 0.06 62), oklch(27% 0.035 66));
+  color: oklch(91% 0.025 72);
   font-size: 0.68rem;
   font-weight: 800;
 }
 
 .moving-plate span:last-child {
-  border-right: 1px solid oklch(50% 0.035 77 / 72%);
+  border-right: 1px solid oklch(61% 0.055 66 / 86%);
 }
 
 .plate-motion.is-moving .moving-plate span {
-  background: linear-gradient(180deg, oklch(39% 0.065 54), oklch(24% 0.032 70));
+  background: linear-gradient(180deg, oklch(51% 0.09 54), oklch(31% 0.05 62));
 }
 
 .pin-stepper {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) 42px;
   align-items: stretch;
+  width: min(360px, 100%);
   min-height: 40px;
+  margin-top: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -505,9 +507,20 @@ h2 {
   color: oklch(96% 0.01 70);
 }
 
-.link-button.is-disabled {
+.link-button.is-actor {
+  border-color: var(--accent);
+  background: color-mix(in oklch, var(--accent), oklch(20% 0.018 78) 82%);
   cursor: not-allowed;
-  opacity: 0.55;
+}
+
+.link-button.is-actor strong {
+  background: color-mix(in oklch, var(--accent), oklch(24% 0.02 78) 58%);
+  color: oklch(97% 0.012 94);
+}
+
+.link-button.is-actor span {
+  color: oklch(96% 0.012 94);
+  font-weight: 800;
 }
 
 .hint,

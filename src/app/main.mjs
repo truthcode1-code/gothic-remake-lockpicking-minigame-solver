@@ -6,6 +6,7 @@ import {
   createResetPuzzle,
   solvePuzzle,
 } from '../domain/solver.mjs';
+import { readClipboardText, writeClipboardText } from '../share/clipboard.mjs';
 import { createShareText, normalizeSharePuzzle, parseShareText } from '../share/share.mjs';
 
 const app = document.querySelector('#app');
@@ -110,11 +111,11 @@ function currentShareText() {
 }
 
 async function copySetup() {
-  await navigator.clipboard?.writeText(currentShareText());
+  await writeClipboardText(currentShareText());
 }
 
 async function pasteSetup() {
-  const text = await navigator.clipboard?.readText();
+  const text = await readClipboardText();
   if (!text) {
     return;
   }
@@ -201,7 +202,7 @@ function positionVisual(position, isMoving) {
 function currentPinStepper(plate) {
   const value = puzzle.initial[plate];
   return `
-    <div class="pin-stepper" aria-label="Current pin position for plate ${plate + 1}">
+    <div class="pin-stepper" aria-label="Initial pin position for plate ${plate + 1}">
       <button
         data-action="step-position"
         data-plate="${plate}"
@@ -210,7 +211,7 @@ function currentPinStepper(plate) {
         aria-label="Move plate ${plate + 1} pin position left"
         ${value === 0 ? 'disabled' : ''}
       >←</button>
-      <span><small>Current pin position</small><strong>${value + 1}</strong></span>
+      <span><small>Initial pin position</small><strong>${value + 1}</strong></span>
       <button
         data-action="step-position"
         data-plate="${plate}"
@@ -242,7 +243,6 @@ function plateCard(plate, positions, movingPlates) {
       </button>
       <div class="plate-pickers">
         <label>
-          <span>Current pin position</span>
           ${positionPicker('initial', plate, positions, movingPlates)}
         </label>
       </div>
@@ -262,7 +262,7 @@ function linkButton(target) {
         : 'Opposite direction';
   return `
     <button
-      class="link-button ${mode !== 'none' ? 'is-linked' : ''} ${disabled ? 'is-disabled' : ''}"
+      class="link-button ${mode !== 'none' ? 'is-linked' : ''} ${disabled ? 'is-actor' : ''}"
       data-action="cycle-link"
       data-target="${target}"
       ${disabled ? 'disabled' : ''}
