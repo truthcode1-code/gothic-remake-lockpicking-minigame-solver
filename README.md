@@ -25,6 +25,38 @@ Each plate has seven positions. The correct position is the middle notch. A move
 
 The visible solution groups repeated moves by plate and direction, for example `1 ←←←`. The header copy/paste controls use a JSON payload with the full setup plus solution context so a setup can be shared and loaded again later.
 
+## User guide
+
+The solver is split into three working areas:
+
+```text
+Plate setup                 Link editor                 Solution
+-----------                 -----------                 --------
+Plate 1  [1 2 3 4 5 6 7]    Plate 1: actor              1  ←←
+Plate 2  [1 2 3 4 5 6 7]    Plate 2: same              3  →
+Plate 3  [1 2 3 4 5 6 7]    Plate 3: opposite
+```
+
+1. Choose the number of plates with the `-` and `+` buttons in the header.
+
+2. Click a plate row to select it. The selected plate is the actor plate, meaning the plate you are currently configuring and moving in the lock.
+
+3. For each plate, set the current pin position with the `1..7` buttons in the plate setup list. The correct position is always the middle position, `4`.
+
+4. With a plate selected, use the link editor to choose which other plates move when that selected plate moves. Click each linked plate button to cycle through:
+
+```text
+off -> same -> opposite -> off
+```
+
+5. Use `same` when the linked plate moves in the same direction as the selected plate. Use `opposite` when it moves in the other direction.
+
+6. Repeat steps 2 to 5 for every plate whose movement affects other plates.
+
+7. Read the solution from top to bottom. The number is the plate to move, and the repeated arrows show the direction and count. For example, `2 ←←←` means move plate 2 three times in that displayed direction.
+
+8. Use `Copy setup` to copy the current setup and solution. Use `Paste setup` to load a setup from your clipboard.
+
 ## Development
 
 ```bash
