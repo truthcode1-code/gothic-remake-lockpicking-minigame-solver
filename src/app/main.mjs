@@ -31,6 +31,7 @@ function saveState() {
 const storedState = loadState();
 let puzzle = storedState.puzzle;
 let selectedActor = storedState.selectedActor;
+let helpOpen = false;
 
 function cloneLinks(links) {
   return links.map((effects) => effects.map((effect) => ({ ...effect })));
@@ -258,7 +259,36 @@ function topActions() {
       <button class="reset-button" data-action="reset-puzzle" type="button">Reset</button>
       <button class="share-button" data-action="copy-share" type="button">Copy setup</button>
       <button class="share-button" data-action="paste-share" type="button">Paste setup</button>
+      <button class="help-button" data-action="toggle-help" type="button" aria-expanded="${helpOpen}">Help</button>
     </div>
+  `;
+}
+
+function helpPanel() {
+  if (!helpOpen) {
+    return '';
+  }
+
+  return `
+    <section class="help-overlay" aria-label="How to use the solver">
+      <div class="help-panel">
+        <div class="help-header">
+          <div>
+            <p class="eyebrow">Quick guide</p>
+            <h2>How it works</h2>
+          </div>
+          <button data-action="toggle-help" type="button" aria-label="Close help">×</button>
+        </div>
+        <ol class="help-steps">
+          <li><strong>Choose plates.</strong> Use − and + to match the number of lock plates.</li>
+          <li><strong>Select a plate.</strong> Click a plate row. That plate becomes the actor you are configuring.</li>
+          <li><strong>Set pin positions.</strong> For every plate, click its current position from 1 to 7. The correct position is always 4.</li>
+          <li><strong>Configure linked movement.</strong> In the link editor, click each plate to cycle off, same, opposite.</li>
+          <li><strong>Repeat per actor.</strong> Select the next plate and configure which plates move when that plate moves.</li>
+          <li><strong>Read the solution.</strong> Move the numbered plate by the shown arrows and step count, top to bottom.</li>
+        </ol>
+      </div>
+    </section>
   `;
 }
 
@@ -312,6 +342,7 @@ function render() {
         </aside>
       </section>
     </section>
+    ${helpPanel()}
   `;
   mountCoffeeButton();
 }
@@ -347,6 +378,11 @@ app.addEventListener('click', async (event) => {
 
   if (action === 'reset-puzzle') {
     resetPuzzle();
+  }
+
+  if (action === 'toggle-help') {
+    helpOpen = !helpOpen;
+    render();
   }
 
   if (action === 'copy-share') {
