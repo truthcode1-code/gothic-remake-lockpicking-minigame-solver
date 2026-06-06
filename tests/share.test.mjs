@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createShareText, parseShareText } from './share.mjs';
+import { createShareText, parseShareText } from '../src/share/share.mjs';
 
 test('share text round trips puzzle setup and selected actor', () => {
   const puzzle = {

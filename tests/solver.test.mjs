@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { applyMove, compressMoves, solvePuzzle } from './solver.mjs';
+import { applyMove, compressMoves, solvePuzzle } from '../src/domain/solver.mjs';
 
 test('a one-way actor link only applies for the selected plate', () => {
   const links = [

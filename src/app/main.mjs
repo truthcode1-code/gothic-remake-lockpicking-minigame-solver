@@ -1,5 +1,5 @@
-import { MIDDLE_POSITION, POSITION_COUNT, createDefaultPuzzle, solvePuzzle } from './solver.mjs';
-import { createShareText, normalizeSharePuzzle, parseShareText } from './share.mjs';
+import { MIDDLE_POSITION, POSITION_COUNT, createDefaultPuzzle, solvePuzzle } from '../domain/solver.mjs';
+import { createShareText, normalizeSharePuzzle, parseShareText } from '../share/share.mjs';
 
 const app = document.querySelector('#app');
 const STORAGE_KEY = 'gothic-lockpick-solver-state';

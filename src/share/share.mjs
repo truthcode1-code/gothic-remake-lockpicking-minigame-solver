@@ -1,4 +1,4 @@
-import { MIDDLE_POSITION, POSITION_COUNT, createDefaultPuzzle } from './solver.mjs';
+import { MIDDLE_POSITION, POSITION_COUNT, createDefaultPuzzle } from '../domain/solver.mjs';
 
 export function normalizeSharePuzzle(value) {
   const count = Math.max(1, Math.min(8, Number(value?.initial?.length) || 5));
