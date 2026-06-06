@@ -106,7 +106,7 @@ function getLinkMode(actor, target) {
 }
 
 function formatArrows(direction, count) {
-  const glyph = direction === 'left' ? '←' : '→';
+  const glyph = direction === 'left' ? '→' : '←';
   return glyph.repeat(count);
 }
 

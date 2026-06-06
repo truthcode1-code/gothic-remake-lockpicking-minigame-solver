@@ -1,6 +1,6 @@
 # Gothic Remake Lockpicking Minigame Solver
 
-A small browser prototype for modeling the Gothic Remake lockpicking minigame.
+A browser-based solver for experimenting with the Gothic Remake lockpicking minigame. Configure the plate setup, model linked plate movement, and get a shortest valid sequence that respects the seven-position plate boundaries.
 
 Features:
 
@@ -10,6 +10,12 @@ Features:
 - Copy and load setups, including solution context.
 - Remember the last setup locally in the browser.
 - Klaro disclosure for functional localStorage usage.
+
+## How it works
+
+Each plate has seven positions. The correct position is the middle notch. A move selects one actor plate and moves it left or right by one step. Linked plates can move with the actor in the same direction or the opposite direction. A move is invalid if the actor or any linked plate would leave the `1..7` range.
+
+The visible solution groups repeated moves by plate and direction, for example `1 ←←←`. The share box includes the full setup plus solution context so a setup can be copied, pasted, and loaded again later.
 
 ## Development
 

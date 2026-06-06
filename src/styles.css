@@ -222,6 +222,12 @@ h2 {
   padding: clamp(10px, 1.5vh, 16px);
 }
 
+.solution-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
 .panel-heading {
   display: grid;
   gap: 4px;
@@ -283,12 +289,15 @@ h2 {
 
 .solution-list {
   display: grid;
+  align-content: start;
   gap: 6px;
+  min-height: 0;
   max-height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: auto;
   list-style: none;
+  scrollbar-width: thin;
 }
 
 .solution-list li {
