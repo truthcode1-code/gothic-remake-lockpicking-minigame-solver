@@ -251,16 +251,27 @@ function mountCoffeeButton() {
 function topActions() {
   return `
     <div class="top-actions">
-      <div class="plate-stepper" aria-label="Plate count">
-        <button data-action="decrease-plates" type="button" aria-label="Decrease plates">−</button>
-        <span><strong>${puzzle.initial.length}</strong> plates</span>
-        <button data-action="increase-plates" type="button" aria-label="Increase plates">+</button>
-      </div>
       <button class="reset-button" data-action="reset-puzzle" type="button">Reset</button>
       <button class="share-button" data-action="copy-share" type="button">Copy setup</button>
       <button class="share-button" data-action="paste-share" type="button">Paste setup</button>
       <button class="help-button" data-action="toggle-help" type="button" aria-expanded="${helpOpen}">Help</button>
     </div>
+  `;
+}
+
+function plateControls() {
+  return `
+    <section class="plate-controls" aria-label="Plate count">
+      <div>
+        <p class="eyebrow">Setup</p>
+        <h2>Plates</h2>
+      </div>
+      <div class="plate-stepper">
+        <button data-action="decrease-plates" type="button" aria-label="Decrease plates">−</button>
+        <span><strong>${puzzle.initial.length}</strong> plates</span>
+        <button data-action="increase-plates" type="button" aria-label="Increase plates">+</button>
+      </div>
+    </section>
   `;
 }
 
@@ -287,6 +298,18 @@ function helpPanel() {
           <li><strong>Repeat per actor.</strong> Select the next plate and configure which plates move when that plate moves.</li>
           <li><strong>Read the solution.</strong> Move the numbered plate by the shown arrows and step count, top to bottom.</li>
         </ol>
+        <figure class="help-example">
+          <img
+            src="https://www.pcgames.de/screenshots/1000x562/2026/06/Gothic_Remake_Schloss-pc-games_artwork1.jpg"
+            alt="Gothic Remake lockpicking minigame reference showing six plate pins"
+          />
+          <figcaption>
+            Example reference from
+            <a href="https://www.pcgames.de/screenshots/1000x562/2026/06/Gothic_Remake_Schloss-pc-games_artwork1.jpg" target="_blank" rel="noreferrer">PC Games</a>:
+            the visible pin positions are plate 1 = 2, plate 2 = 5, plate 3 = 6, plate 4 = 6, plate 5 = 5, and plate 6 = 4.
+            The goal is always to bring every pin to the 4th position.
+          </figcaption>
+        </figure>
       </div>
     </section>
   `;
@@ -314,6 +337,7 @@ function render() {
     <section class="app-workspace" style="--plate-count: ${puzzle.initial.length}">
       <section class="workspace">
         <div class="main-panel">
+          ${plateControls()}
           <div class="plate-board">
             ${puzzle.initial.map((_, plate) => plateCard(plate)).join('')}
           </div>
