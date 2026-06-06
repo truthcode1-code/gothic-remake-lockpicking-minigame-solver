@@ -8,6 +8,7 @@ import {
   compressMoves,
   createDefaultPuzzle,
   createResetPuzzle,
+  defaultMaxVisitedForPlateCount,
   solvePuzzle,
 } from '../src/domain/solver.mjs';
 
@@ -17,6 +18,14 @@ test('default puzzle starts with five plates', () => {
 
 test('reset puzzle preserves the current plate count', () => {
   assert.deepEqual(createResetPuzzle(createDefaultPuzzle(7)).initial, [3, 3, 3, 3, 3, 3, 3]);
+});
+
+test('default search budget increases for larger plate counts', () => {
+  assert.equal(defaultMaxVisitedForPlateCount(1), 250000);
+  assert.equal(defaultMaxVisitedForPlateCount(5), 250000);
+  assert.equal(defaultMaxVisitedForPlateCount(6), 750000);
+  assert.equal(defaultMaxVisitedForPlateCount(7), 2250000);
+  assert.equal(defaultMaxVisitedForPlateCount(8), 5000000);
 });
 
 test('a one-way actor link only applies for the selected plate', () => {

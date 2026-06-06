@@ -84,11 +84,27 @@ export function applyCompressedMoves(state, moves, links) {
   return next;
 }
 
+export function defaultMaxVisitedForPlateCount(count) {
+  if (count >= 8) {
+    return 5000000;
+  }
+
+  if (count >= 7) {
+    return 2250000;
+  }
+
+  if (count >= 6) {
+    return 750000;
+  }
+
+  return 250000;
+}
+
 export function solvePuzzle({
   initial,
   target,
   links,
-  maxVisited = 250000,
+  maxVisited,
   requireActorAtTarget = false,
 }) {
   if (initial.length !== target.length) {
@@ -97,6 +113,7 @@ export function solvePuzzle({
 
   const normalizedInitial = initial.map(normalizePosition);
   const normalizedTarget = target.map(normalizePosition);
+  const visitedLimit = maxVisited ?? defaultMaxVisitedForPlateCount(normalizedInitial.length);
   if (sameState(normalizedInitial, normalizedTarget)) {
     return { status: 'solved', moves: [], visited: 1 };
   }
@@ -105,7 +122,7 @@ export function solvePuzzle({
   const visited = new Set([stateKey(normalizedInitial)]);
 
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
-    if (visited.size > maxVisited) {
+    if (visited.size > visitedLimit) {
       return { status: 'limit', moves: [], visited: visited.size };
     }
 
