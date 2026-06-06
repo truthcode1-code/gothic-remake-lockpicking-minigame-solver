@@ -2,6 +2,8 @@
 
 A browser-based solver for experimenting with the Gothic Remake lockpicking minigame. Configure the plate setup, model linked plate movement, and get a shortest valid sequence that respects the seven-position plate boundaries.
 
+Live app: https://truthcode1-code.github.io/gothic-remake-lockpicking-minigame-solver/
+
 Features:
 
 - Configure 1 to 8 plates with 7 positions each.
