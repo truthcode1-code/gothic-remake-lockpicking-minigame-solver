@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import {
   applyMove,
+  applyCompressedMove,
+  applyCompressedMoves,
   compressMoves,
   createDefaultPuzzle,
   createResetPuzzle,
@@ -105,4 +107,17 @@ test('compressMoves preserves plate and direction changes', () => {
       { actor: 1, direction: 'left', count: 1 },
     ],
   );
+});
+
+test('compressed solution moves can be replayed without wrapping', () => {
+  const links = [
+    [{ target: 1, mode: 'opposite' }],
+    [],
+  ];
+
+  const move = { actor: 0, direction: 'right', count: 2 };
+
+  assert.deepEqual(applyCompressedMove([1, 5], move, links), [3, 3]);
+  assert.deepEqual(applyCompressedMoves([1, 5], [move], links), [3, 3]);
+  assert.equal(applyCompressedMove([5, 1], move, links), null);
 });

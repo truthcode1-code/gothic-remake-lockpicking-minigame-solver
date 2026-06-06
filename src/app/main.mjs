@@ -1,6 +1,7 @@
 import {
   MIDDLE_POSITION,
   POSITION_COUNT,
+  applyCompressedMoves,
   createDefaultPuzzle,
   createResetPuzzle,
   solvePuzzle,
@@ -32,6 +33,7 @@ const storedState = loadState();
 let puzzle = storedState.puzzle;
 let selectedActor = storedState.selectedActor;
 let helpOpen = false;
+let playbackStep = 0;
 
 function cloneLinks(links) {
   return links.map((effects) => effects.map((effect) => ({ ...effect })));
@@ -49,6 +51,7 @@ function resizePuzzle(count) {
   );
   puzzle = next;
   selectedActor = Math.min(selectedActor, nextCount - 1);
+  playbackStep = 0;
   saveState();
   render();
 }
@@ -56,6 +59,7 @@ function resizePuzzle(count) {
 function resetPuzzle() {
   puzzle = createResetPuzzle(puzzle);
   selectedActor = 0;
+  playbackStep = 0;
   saveState();
   render();
 }
@@ -70,6 +74,7 @@ function setPlatePosition(kind, plate, position) {
     [kind]: puzzle[kind].map((value, index) => (index === plate ? position : value)),
     links: cloneLinks(puzzle.links),
   };
+  playbackStep = 0;
   saveState();
   render();
 }
@@ -90,6 +95,7 @@ function cycleLink(actor, target) {
     links[actor] = links[actor].filter((effect) => effect.target !== target);
   }
   puzzle = { ...puzzle, links };
+  playbackStep = 0;
   saveState();
   render();
 }
@@ -116,6 +122,7 @@ async function pasteSetup() {
   const loaded = parseShareText(text);
   puzzle = loaded.puzzle;
   selectedActor = loaded.selectedActor;
+  playbackStep = 0;
   saveState();
   render();
 }
@@ -134,38 +141,109 @@ function formatArrows(direction, count) {
   return glyph.repeat(count);
 }
 
-function positionPicker(kind, plate) {
+function getPlaybackPositions(result) {
+  if (result.status !== 'solved' || playbackStep === 0) {
+    return puzzle.initial;
+  }
+
+  return applyCompressedMoves(puzzle.initial, result.moves.slice(0, playbackStep), puzzle.links) ?? puzzle.initial;
+}
+
+function getMovingPlates(result) {
+  if (result.status !== 'solved' || playbackStep === 0) {
+    return new Set();
+  }
+
+  const move = result.moves[playbackStep - 1];
+  return new Set([move.actor, ...(puzzle.links[move.actor] ?? []).map((effect) => effect.target)]);
+}
+
+function linkSummary() {
+  const effects = puzzle.links[selectedActor] ?? [];
+  if (effects.length === 0) {
+    return `No other plates move with Plate ${selectedActor + 1} yet.`;
+  }
+
+  return `Moves with it: ${effects
+    .map((effect) => `Plate ${effect.target + 1} ${getLinkMode(selectedActor, effect.target) === 'opposite' ? 'opposite' : 'same'}`)
+    .join(', ')}.`;
+}
+
+function playbackControls(result) {
+  if (result.status !== 'solved' || result.moves.length === 0) {
+    return '';
+  }
+
+  const atEnd = playbackStep >= result.moves.length;
   return `
-    <div class="position-row" role="radiogroup" aria-label="${kind} position for plate ${plate + 1}">
-      ${Array.from({ length: POSITION_COUNT }, (_, position) => {
-        const isActive = puzzle[kind][plate] === position;
-        return `
-          <button
-            class="notch ${isActive ? 'is-active' : ''}"
-            data-action="set-position"
-            data-kind="${kind}"
-            data-plate="${plate}"
-            data-position="${position}"
-            aria-pressed="${isActive}"
-          >${position + 1}</button>
-        `;
-      }).join('')}
+    <div class="playback-controls" aria-label="Solution playback">
+      <button data-action="playback-next" type="button" ${atEnd ? 'disabled' : ''}>
+        ${playbackStep === 0 ? 'Start playback' : 'Next step'}
+      </button>
+      <button data-action="playback-reset" type="button" ${playbackStep === 0 ? 'disabled' : ''}>Reset preview</button>
+      <span>Step ${playbackStep} of ${result.moves.length}</span>
     </div>
   `;
 }
 
-function plateCard(plate) {
+function positionVisual(position, isMoving) {
+  const plateLeft = POSITION_COUNT - 1 - position;
+  return `
+    <div class="plate-motion ${isMoving ? 'is-moving' : ''}" style="--plate-left: ${plateLeft}" aria-hidden="true">
+      <div class="fixed-target"></div>
+      <div class="moving-plate">
+        ${Array.from({ length: POSITION_COUNT }, (_, index) => `<span>${index + 1}</span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function currentPinStepper(plate) {
+  const value = puzzle.initial[plate];
+  return `
+    <div class="pin-stepper" aria-label="Current pin position for plate ${plate + 1}">
+      <button
+        data-action="step-position"
+        data-plate="${plate}"
+        data-delta="-1"
+        type="button"
+        aria-label="Move plate ${plate + 1} pin position left"
+        ${value === 0 ? 'disabled' : ''}
+      >←</button>
+      <span><small>Current pin position</small><strong>${value + 1}</strong></span>
+      <button
+        data-action="step-position"
+        data-plate="${plate}"
+        data-delta="1"
+        type="button"
+        aria-label="Move plate ${plate + 1} pin position right"
+        ${value === POSITION_COUNT - 1 ? 'disabled' : ''}
+      >→</button>
+    </div>
+  `;
+}
+
+function positionPicker(kind, plate, positions, movingPlates) {
+  const displayPosition = positions[plate];
+  const isMoving = movingPlates.has(plate);
+  return `
+    ${positionVisual(displayPosition, isMoving)}
+    ${currentPinStepper(plate)}
+  `;
+}
+
+function plateCard(plate, positions, movingPlates) {
   const selected = selectedActor === plate;
   return `
-    <article class="plate ${selected ? 'is-selected' : ''}">
+    <article class="plate ${selected ? 'is-selected' : ''} ${movingPlates.has(plate) ? 'is-moving' : ''}">
       <button class="plate-title" data-action="select-actor" data-plate="${plate}">
         <span>Plate ${plate + 1}</span>
-        <strong>${selected ? 'editing links' : 'select'}</strong>
+        <strong>${selected ? 'Actor' : 'Set as actor'}</strong>
       </button>
       <div class="plate-pickers">
         <label>
           <span>Current pin position</span>
-          ${positionPicker('initial', plate)}
+          ${positionPicker('initial', plate, positions, movingPlates)}
         </label>
       </div>
     </article>
@@ -180,8 +258,8 @@ function linkButton(target) {
     : mode === 'none'
       ? 'Not linked'
       : mode === 'same'
-        ? 'same'
-        : 'opposite';
+        ? 'Same direction'
+        : 'Opposite direction';
   return `
     <button
       class="link-button ${mode !== 'none' ? 'is-linked' : ''} ${disabled ? 'is-disabled' : ''}"
@@ -208,9 +286,10 @@ function solutionPanel(result) {
   }
 
   return `
+    ${playbackControls(result)}
     <ol class="solution-list">
-      ${result.moves.map((move) => `
-        <li>
+      ${result.moves.map((move, index) => `
+        <li class="${index === playbackStep - 1 ? 'is-current' : ''}">
           <span class="move-plate">${move.actor + 1}</span>
           <span class="move-arrows">${formatArrows(move.direction, move.count)}</span>
           <span class="move-count">${move.count} ${move.count === 1 ? 'step' : 'steps'}</span>
@@ -318,6 +397,7 @@ function helpPanel() {
 function supportPanel() {
   return `
     <section class="support-panel" aria-label="Support this project">
+      <p>Saved you some headaches?</p>
       <div id="coffee-button" class="coffee-button"></div>
     </section>
   `;
@@ -325,6 +405,9 @@ function supportPanel() {
 
 function render() {
   const result = solvePuzzle(puzzle);
+  playbackStep = Math.min(playbackStep, result.status === 'solved' ? result.moves.length : 0);
+  const playbackPositions = getPlaybackPositions(result);
+  const movingPlates = getMovingPlates(result);
   app.innerHTML = `
     <section class="topbar">
       <div>
@@ -338,7 +421,7 @@ function render() {
       <section class="workspace">
         <div class="main-panel">
           <div class="plate-board">
-            ${puzzle.initial.map((_, plate) => plateCard(plate)).join('')}
+            ${puzzle.initial.map((_, plate) => plateCard(plate, playbackPositions, movingPlates)).join('')}
           </div>
         </div>
 
@@ -347,12 +430,13 @@ function render() {
           <section class="link-editor">
             <div class="panel-heading">
               <p class="eyebrow">Actor plate ${selectedActor + 1}</p>
-              <h2>Click linked plates</h2>
+              <h2>When Plate ${selectedActor + 1} moves</h2>
             </div>
+            <p class="link-summary">${linkSummary()}</p>
             <div class="link-grid">
               ${puzzle.initial.map((_, target) => linkButton(target)).join('')}
             </div>
-            <p class="hint">Choose which plates follow plate ${selectedActor + 1}. Click a plate to cycle between off, same direction, and opposite direction.</p>
+            <p class="hint">Click a plate to cycle: Not linked, same direction, opposite direction. Same follows Plate ${selectedActor + 1}. Opposite moves the other way.</p>
           </section>
 
           <section class="solution-panel">
@@ -380,12 +464,21 @@ app.addEventListener('click', async (event) => {
   const { action } = button.dataset;
   if (action === 'select-actor') {
     selectedActor = Number(button.dataset.plate);
+    playbackStep = 0;
     saveState();
     render();
   }
 
   if (action === 'set-position') {
     setPlatePosition(button.dataset.kind, Number(button.dataset.plate), Number(button.dataset.position));
+  }
+
+  if (action === 'step-position') {
+    const plate = Number(button.dataset.plate);
+    const nextPosition = puzzle.initial[plate] + Number(button.dataset.delta);
+    if (nextPosition >= 0 && nextPosition < POSITION_COUNT) {
+      setPlatePosition('initial', plate, nextPosition);
+    }
   }
 
   if (action === 'cycle-link') {
@@ -419,6 +512,19 @@ app.addEventListener('click', async (event) => {
     } catch {
       button.classList.add('is-invalid');
     }
+  }
+
+  if (action === 'playback-next') {
+    const result = solvePuzzle(puzzle);
+    if (result.status === 'solved') {
+      playbackStep = Math.min(playbackStep + 1, result.moves.length);
+      render();
+    }
+  }
+
+  if (action === 'playback-reset') {
+    playbackStep = 0;
+    render();
   }
 });
 

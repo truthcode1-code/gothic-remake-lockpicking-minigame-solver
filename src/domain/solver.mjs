@@ -62,6 +62,28 @@ export function compressMoves(moves) {
   return compressed;
 }
 
+export function applyCompressedMove(state, move, links) {
+  let next = [...state];
+  for (let step = 0; step < move.count; step += 1) {
+    next = applyMove(next, move.actor, move.direction, links);
+    if (next === null) {
+      return null;
+    }
+  }
+  return next;
+}
+
+export function applyCompressedMoves(state, moves, links) {
+  let next = [...state];
+  for (const move of moves) {
+    next = applyCompressedMove(next, move, links);
+    if (next === null) {
+      return null;
+    }
+  }
+  return next;
+}
+
 export function solvePuzzle({
   initial,
   target,
