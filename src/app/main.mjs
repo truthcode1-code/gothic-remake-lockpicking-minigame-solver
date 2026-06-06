@@ -337,13 +337,13 @@ function render() {
     <section class="app-workspace" style="--plate-count: ${puzzle.initial.length}">
       <section class="workspace">
         <div class="main-panel">
-          ${plateControls()}
           <div class="plate-board">
             ${puzzle.initial.map((_, plate) => plateCard(plate)).join('')}
           </div>
         </div>
 
         <aside class="side-panel">
+          ${plateControls()}
           <section class="link-editor">
             <div class="panel-heading">
               <p class="eyebrow">Actor plate ${selectedActor + 1}</p>
