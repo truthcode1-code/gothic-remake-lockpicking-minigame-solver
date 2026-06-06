@@ -22,22 +22,9 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ puzzle, selectedActor }));
 }
 
-function resetShareDraft() {
-  shareDraft = '';
-}
-
-function escapeHtml(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
-
 const storedState = loadState();
 let puzzle = storedState.puzzle;
 let selectedActor = storedState.selectedActor;
-let shareDraft = '';
 
 function cloneLinks(links) {
   return links.map((effects) => effects.map((effect) => ({ ...effect })));
@@ -55,7 +42,6 @@ function resizePuzzle(count) {
   );
   puzzle = next;
   selectedActor = Math.min(selectedActor, nextCount - 1);
-  resetShareDraft();
   saveState();
   render();
 }
@@ -63,7 +49,6 @@ function resizePuzzle(count) {
 function resetPuzzle() {
   puzzle = createDefaultPuzzle();
   selectedActor = 0;
-  resetShareDraft();
   saveState();
   render();
 }
@@ -78,7 +63,6 @@ function setPlatePosition(kind, plate, position) {
     [kind]: puzzle[kind].map((value, index) => (index === plate ? position : value)),
     links: cloneLinks(puzzle.links),
   };
-  resetShareDraft();
   saveState();
   render();
 }
@@ -99,7 +83,32 @@ function cycleLink(actor, target) {
     links[actor] = links[actor].filter((effect) => effect.target !== target);
   }
   puzzle = { ...puzzle, links };
-  resetShareDraft();
+  saveState();
+  render();
+}
+
+function currentShareText() {
+  const result = solvePuzzle(puzzle);
+  return createShareText({
+    puzzle,
+    selectedActor,
+    solution: result.status === 'solved' ? result.moves : [],
+  });
+}
+
+async function copySetup() {
+  await navigator.clipboard?.writeText(currentShareText());
+}
+
+async function pasteSetup() {
+  const text = await navigator.clipboard?.readText();
+  if (!text) {
+    return;
+  }
+
+  const loaded = parseShareText(text);
+  puzzle = loaded.puzzle;
+  selectedActor = loaded.selectedActor;
   saveState();
   render();
 }
@@ -204,26 +213,26 @@ function solutionPanel(result) {
   `;
 }
 
-function sharePanel(result) {
-  const shareText = shareDraft || createShareText({
-    puzzle,
-    selectedActor,
-    solution: result.status === 'solved' ? result.moves : [],
-  });
+function mountCoffeeButton() {
+  const host = app.querySelector('#coffee-button');
+  if (!host) {
+    return;
+  }
 
-  return `
-    <section class="share-panel">
-      <div class="panel-heading">
-        <p class="eyebrow">Share</p>
-        <h2>Setup and solution</h2>
-      </div>
-      <textarea data-action="share-text" spellcheck="false">${escapeHtml(shareText)}</textarea>
-      <div class="share-actions">
-        <button data-action="copy-share" type="button">Copy</button>
-        <button data-action="load-share" type="button">Load</button>
-      </div>
-    </section>
-  `;
+  host.textContent = '';
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js';
+  script.dataset.name = 'bmc-button';
+  script.dataset.slug = 'gothic.locksolver';
+  script.dataset.color = '#FFDD00';
+  script.dataset.emoji = '';
+  script.dataset.font = 'Cookie';
+  script.dataset.text = 'Buy me a coffee';
+  script.dataset.outlineColor = '#000000';
+  script.dataset.fontColor = '#000000';
+  script.dataset.coffeeColor = '#ffffff';
+  host.append(script);
 }
 
 function topActions() {
@@ -235,7 +244,9 @@ function topActions() {
         <button data-action="increase-plates" type="button" aria-label="Increase plates">+</button>
       </div>
       <button class="reset-button" data-action="reset-puzzle" type="button">Reset</button>
-      <a class="coffee-link" href="https://buymeacoffee.com/gothic.locksolver" target="_blank" rel="noreferrer">Buy me a coffee</a>
+      <button class="share-button" data-action="copy-share" type="button">Copy setup</button>
+      <button class="share-button" data-action="paste-share" type="button">Paste setup</button>
+      <div id="coffee-button" class="coffee-button"></div>
     </div>
   `;
 }
@@ -280,12 +291,12 @@ function render() {
           </section>
         </aside>
       </section>
-      ${sharePanel(result)}
     </section>
   `;
+  mountCoffeeButton();
 }
 
-app.addEventListener('click', (event) => {
+app.addEventListener('click', async (event) => {
   const button = event.target.closest('button');
   if (!button) {
     return;
@@ -294,7 +305,6 @@ app.addEventListener('click', (event) => {
   const { action } = button.dataset;
   if (action === 'select-actor') {
     selectedActor = Number(button.dataset.plate);
-    resetShareDraft();
     saveState();
     render();
   }
@@ -320,30 +330,15 @@ app.addEventListener('click', (event) => {
   }
 
   if (action === 'copy-share') {
-    const text = app.querySelector('[data-action="share-text"]')?.value ?? '';
-    navigator.clipboard?.writeText(text);
+    await copySetup();
   }
 
-  if (action === 'load-share') {
-    const text = app.querySelector('[data-action="share-text"]')?.value ?? '';
+  if (action === 'paste-share') {
     try {
-      const loaded = parseShareText(text);
-      puzzle = loaded.puzzle;
-      selectedActor = loaded.selectedActor;
-      shareDraft = '';
-      saveState();
-      render();
+      await pasteSetup();
     } catch {
-      shareDraft = text;
-      app.querySelector('[data-action="share-text"]')?.classList.add('is-invalid');
+      button.classList.add('is-invalid');
     }
-  }
-});
-
-app.addEventListener('input', (event) => {
-  if (event.target.dataset.action === 'share-text') {
-    shareDraft = event.target.value;
-    event.target.classList.remove('is-invalid');
   }
 });
 

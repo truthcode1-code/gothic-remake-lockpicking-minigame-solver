@@ -7,7 +7,7 @@ Features:
 - Configure 1 to 8 plates with 7 positions each.
 - Link plates by actor plate using same-direction or opposite-direction movement.
 - Solve valid move sequences while respecting plate boundaries.
-- Copy and load setups, including solution context.
+- Copy and paste setups from the header, including solution context.
 - Remember the last setup locally in the browser.
 - Klaro disclosure for functional localStorage usage.
 
@@ -21,7 +21,7 @@ https://buymeacoffee.com/gothic.locksolver
 
 Each plate has seven positions. The correct position is the middle notch. A move selects one actor plate and moves it left or right by one step. Linked plates can move with the actor in the same direction or the opposite direction. A move is invalid if the actor or any linked plate would leave the `1..7` range.
 
-The visible solution groups repeated moves by plate and direction, for example `1 ←←←`. The share box includes the full setup plus solution context so a setup can be copied, pasted, and loaded again later.
+The visible solution groups repeated moves by plate and direction, for example `1 ←←←`. The header copy/paste controls use a JSON payload with the full setup plus solution context so a setup can be shared and loaded again later.
 
 ## Development
 

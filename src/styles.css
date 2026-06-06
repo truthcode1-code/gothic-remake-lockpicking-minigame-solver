@@ -104,7 +104,7 @@ h2 {
 
 .plate-stepper button,
 .reset-button,
-.coffee-link {
+.share-button {
   min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -133,7 +133,7 @@ h2 {
 }
 
 .reset-button,
-.coffee-link {
+.share-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -142,21 +142,26 @@ h2 {
   text-decoration: none;
 }
 
-.coffee-link {
-  border-color: var(--accent-warm);
-  background: color-mix(in oklch, var(--accent-warm), var(--surface-raised) 72%);
+.coffee-button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
 }
 
 .plate-stepper button:hover,
 .reset-button:hover,
-.coffee-link:hover {
+.share-button:hover {
   border-color: var(--accent);
   filter: brightness(1.08);
 }
 
+.share-button.is-invalid {
+  border-color: var(--danger);
+}
+
 .app-workspace {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(126px, 0.42fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: clamp(10px, 1.6vh, 16px);
   min-height: 0;
   overflow: hidden;
@@ -200,8 +205,7 @@ h2 {
 
 .plate,
 .link-editor,
-.solution-panel,
-.share-panel {
+.solution-panel {
   min-height: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -276,8 +280,7 @@ h2 {
 }
 
 .link-editor,
-.solution-panel,
-.share-panel {
+.solution-panel {
   padding: clamp(10px, 1.5vh, 16px);
 }
 
@@ -396,56 +399,6 @@ h2 {
   white-space: nowrap;
 }
 
-.share-panel {
-  display: grid;
-  grid-template-columns: minmax(190px, 0.22fr) minmax(0, 1fr) auto;
-  grid-template-rows: minmax(0, 1fr);
-  align-items: stretch;
-  gap: 10px;
-}
-
-.share-panel .panel-heading {
-  margin-bottom: 0;
-}
-
-.share-panel textarea {
-  width: 100%;
-  min-height: 0;
-  resize: none;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px;
-  background: oklch(16% 0.014 78);
-  color: oklch(88% 0.018 82);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
-  line-height: 1.35;
-}
-
-.share-panel textarea.is-invalid {
-  border-color: var(--danger);
-}
-
-.share-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-content: stretch;
-  gap: 8px;
-}
-
-.share-actions button {
-  min-width: 92px;
-  min-height: 44px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: oklch(20% 0.018 78);
-  cursor: pointer;
-}
-
-.share-actions button:hover {
-  border-color: var(--accent);
-}
-
 .is-warning {
   color: var(--danger);
 }
@@ -516,13 +469,6 @@ h2 {
     height: auto;
   }
 
-  .share-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .share-panel textarea {
-    min-height: 220px;
-  }
 }
 
 @media (max-width: 560px) {
@@ -540,7 +486,8 @@ h2 {
 
   .plate-stepper,
   .reset-button,
-  .coffee-link {
+  .share-button,
+  .coffee-button {
     width: 100%;
   }
 
