@@ -164,7 +164,7 @@ function plateCard(plate) {
       </button>
       <div class="plate-pickers">
         <label>
-          <span>Initial</span>
+          <span>Current pin position</span>
           ${positionPicker('initial', plate)}
         </label>
       </div>
@@ -178,7 +178,7 @@ function linkButton(target) {
   const label = disabled
     ? 'actor'
     : mode === 'none'
-      ? 'off'
+      ? 'Not linked'
       : mode === 'same'
         ? 'same'
         : 'opposite';
@@ -294,7 +294,7 @@ function helpPanel() {
           <li><strong>Choose plates.</strong> Use − and + to match the number of lock plates.</li>
           <li><strong>Select a plate.</strong> Click a plate row. That plate becomes the actor you are configuring.</li>
           <li><strong>Set pin positions.</strong> For every plate, click its current position from 1 to 7. The correct position is always 4.</li>
-          <li><strong>Configure linked movement.</strong> In the link editor, click each plate to cycle off, same, opposite.</li>
+          <li><strong>Configure linked movement.</strong> In the link editor, click each plate to cycle Not linked, same, opposite.</li>
           <li><strong>Repeat per actor.</strong> Select the next plate and configure which plates move when that plate moves.</li>
           <li><strong>Read the solution.</strong> Move the numbered plate by the shown arrows and step count, top to bottom.</li>
         </ol>
