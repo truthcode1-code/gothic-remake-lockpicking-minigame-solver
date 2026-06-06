@@ -83,24 +83,83 @@ h2 {
   margin-bottom: clamp(8px, 1.5vh, 18px);
 }
 
-.count-control {
+.top-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--muted);
+  flex-wrap: wrap;
 }
 
-.count-control input {
-  width: 64px;
+.plate-stepper {
+  display: grid;
+  grid-template-columns: 48px auto 48px;
+  align-items: center;
+  min-height: 48px;
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 7px 8px;
-  background: var(--surface-sunken);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.plate-stepper button,
+.reset-button,
+.coffee-link {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+
+.plate-stepper button {
+  min-width: 48px;
+  border: 0;
+  border-radius: 0;
+  color: oklch(95% 0.012 82);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.plate-stepper span {
+  min-width: 92px;
+  padding: 0 14px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.plate-stepper strong {
+  color: oklch(95% 0.012 82);
+}
+
+.reset-button,
+.coffee-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
   color: oklch(94% 0.012 82);
+  text-decoration: none;
+}
+
+.coffee-link {
+  border-color: var(--accent-warm);
+  background: color-mix(in oklch, var(--accent-warm), var(--surface-raised) 72%);
+}
+
+.plate-stepper button:hover,
+.reset-button:hover,
+.coffee-link:hover {
+  border-color: var(--accent);
+  filter: brightness(1.08);
+}
+
+.app-workspace {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(126px, 0.42fr);
+  gap: clamp(10px, 1.6vh, 16px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .workspace {
@@ -124,7 +183,7 @@ h2 {
 
 .side-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 0.9fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 14px;
   max-height: 100%;
 }
@@ -339,8 +398,14 @@ h2 {
 
 .share-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(190px, 0.22fr) minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
   gap: 10px;
+}
+
+.share-panel .panel-heading {
+  margin-bottom: 0;
 }
 
 .share-panel textarea {
@@ -363,12 +428,14 @@ h2 {
 
 .share-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
+  align-content: stretch;
   gap: 8px;
 }
 
 .share-actions button {
-  min-height: 36px;
+  min-width: 92px;
+  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: oklch(20% 0.018 78);
@@ -422,8 +489,13 @@ h2 {
   }
 
   .topbar,
+  .app-workspace,
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .app-workspace {
+    grid-template-rows: auto auto;
   }
 
   .topbar {
@@ -432,6 +504,7 @@ h2 {
   }
 
   .workspace,
+  .app-workspace,
   .main-panel,
   .side-panel,
   .plate-board {
@@ -442,6 +515,14 @@ h2 {
   .side-panel {
     height: auto;
   }
+
+  .share-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .share-panel textarea {
+    min-height: 220px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -451,6 +532,16 @@ h2 {
 
   .link-grid {
     grid-template-columns: 1fr;
+  }
+
+  .top-actions {
+    justify-content: stretch;
+  }
+
+  .plate-stepper,
+  .reset-button,
+  .coffee-link {
+    width: 100%;
   }
 
   .solution-list li {

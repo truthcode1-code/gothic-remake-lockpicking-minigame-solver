@@ -11,6 +11,12 @@ Features:
 - Remember the last setup locally in the browser.
 - Klaro disclosure for functional localStorage usage.
 
+## Support
+
+If this saved you some trial and error, you can support the project here:
+
+https://buymeacoffee.com/gothic.locksolver
+
 ## How it works
 
 Each plate has seven positions. The correct position is the middle notch. A move selects one actor plate and moves it left or right by one step. Linked plates can move with the actor in the same direction or the opposite direction. A move is invalid if the actor or any linked plate would leave the `1..7` range.

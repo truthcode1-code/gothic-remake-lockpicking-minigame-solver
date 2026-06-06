@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Lockpicking solver icon">
+  <rect width="64" height="64" rx="12" fill="#27221d" />
+  <rect x="16" y="13" width="32" height="40" rx="5" fill="#5b554b" stroke="#c0a66c" stroke-width="3" />
+  <circle cx="32" cy="22" r="3" fill="#171513" />
+  <circle cx="24" cy="22" r="2.5" fill="#171513" />
+  <circle cx="40" cy="22" r="2.5" fill="#171513" />
+  <path d="M24 38h22" stroke="#171513" stroke-width="5" stroke-linecap="round" />
+  <path d="M32 38l-7 7" stroke="#171513" stroke-width="5" stroke-linecap="round" />
+  <path d="M7 50l22-11" stroke="#d8d1bf" stroke-width="4" stroke-linecap="round" />
+  <path d="M12 55l24-13" stroke="#8da9a0" stroke-width="3" stroke-linecap="round" />
+</svg>

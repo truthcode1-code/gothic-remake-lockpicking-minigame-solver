@@ -49,7 +49,7 @@ test('share text clamps malformed setup to valid plate positions and links', () 
     })),
     {
       puzzle: {
-        initial: [1, 2, 2],
+        initial: [3, 3, 2],
         target: [3, 3, 3],
         links: [[{ target: 2, mode: 'opposite' }], [], []],
       },

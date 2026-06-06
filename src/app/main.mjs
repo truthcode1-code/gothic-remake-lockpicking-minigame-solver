@@ -14,7 +14,7 @@ function loadState() {
       selectedActor: Number.isInteger(actor) ? Math.min(Math.max(actor, 0), puzzleState.initial.length - 1) : 0,
     };
   } catch {
-    return { puzzle: createDefaultPuzzle(5), selectedActor: 0 };
+    return { puzzle: createDefaultPuzzle(), selectedActor: 0 };
   }
 }
 
@@ -55,6 +55,14 @@ function resizePuzzle(count) {
   );
   puzzle = next;
   selectedActor = Math.min(selectedActor, nextCount - 1);
+  resetShareDraft();
+  saveState();
+  render();
+}
+
+function resetPuzzle() {
+  puzzle = createDefaultPuzzle();
+  selectedActor = 0;
   resetShareDraft();
   saveState();
   render();
@@ -218,6 +226,20 @@ function sharePanel(result) {
   `;
 }
 
+function topActions() {
+  return `
+    <div class="top-actions">
+      <div class="plate-stepper" aria-label="Plate count">
+        <button data-action="decrease-plates" type="button" aria-label="Decrease plates">−</button>
+        <span><strong>${puzzle.initial.length}</strong> plates</span>
+        <button data-action="increase-plates" type="button" aria-label="Increase plates">+</button>
+      </div>
+      <button class="reset-button" data-action="reset-puzzle" type="button">Reset</button>
+      <a class="coffee-link" href="https://buymeacoffee.com/gothic.locksolver" target="_blank" rel="noreferrer">Buy me a coffee</a>
+    </div>
+  `;
+}
+
 function render() {
   const result = solvePuzzle(puzzle);
   app.innerHTML = `
@@ -226,40 +248,39 @@ function render() {
         <p class="eyebrow">Gothic Remake</p>
         <h1>Lockpicking Minigame Solver</h1>
       </div>
-      <label class="count-control">
-        <span>Plates</span>
-        <input data-action="plate-count" type="number" min="1" max="8" value="${puzzle.initial.length}" />
-      </label>
+      ${topActions()}
     </section>
 
-    <section class="workspace" style="--plate-count: ${puzzle.initial.length}">
-      <div class="main-panel">
-        <div class="plate-board">
-          ${puzzle.initial.map((_, plate) => plateCard(plate)).join('')}
+    <section class="app-workspace" style="--plate-count: ${puzzle.initial.length}">
+      <section class="workspace">
+        <div class="main-panel">
+          <div class="plate-board">
+            ${puzzle.initial.map((_, plate) => plateCard(plate)).join('')}
+          </div>
         </div>
-      </div>
 
-      <aside class="side-panel">
-        <section class="link-editor">
-          <div class="panel-heading">
-            <p class="eyebrow">Actor plate ${selectedActor + 1}</p>
-            <h2>Click linked plates</h2>
-          </div>
-          <div class="link-grid">
-            ${puzzle.initial.map((_, target) => linkButton(target)).join('')}
-          </div>
-          <p class="hint">Choose which plates follow plate ${selectedActor + 1}. Click a plate to cycle between off, same direction, and opposite direction.</p>
-        </section>
+        <aside class="side-panel">
+          <section class="link-editor">
+            <div class="panel-heading">
+              <p class="eyebrow">Actor plate ${selectedActor + 1}</p>
+              <h2>Click linked plates</h2>
+            </div>
+            <div class="link-grid">
+              ${puzzle.initial.map((_, target) => linkButton(target)).join('')}
+            </div>
+            <p class="hint">Choose which plates follow plate ${selectedActor + 1}. Click a plate to cycle between off, same direction, and opposite direction.</p>
+          </section>
 
-        <section class="solution-panel">
-          <div class="panel-heading">
-            <p class="eyebrow">Shortest search</p>
-            <h2>Solution</h2>
-          </div>
-          ${solutionPanel(result)}
-        </section>
-        ${sharePanel(result)}
-      </aside>
+          <section class="solution-panel">
+            <div class="panel-heading">
+              <p class="eyebrow">Shortest search</p>
+              <h2>Solution</h2>
+            </div>
+            ${solutionPanel(result)}
+          </section>
+        </aside>
+      </section>
+      ${sharePanel(result)}
     </section>
   `;
 }
@@ -284,6 +305,18 @@ app.addEventListener('click', (event) => {
 
   if (action === 'cycle-link') {
     cycleLink(selectedActor, Number(button.dataset.target));
+  }
+
+  if (action === 'decrease-plates') {
+    resizePuzzle(puzzle.initial.length - 1);
+  }
+
+  if (action === 'increase-plates') {
+    resizePuzzle(puzzle.initial.length + 1);
+  }
+
+  if (action === 'reset-puzzle') {
+    resetPuzzle();
   }
 
   if (action === 'copy-share') {

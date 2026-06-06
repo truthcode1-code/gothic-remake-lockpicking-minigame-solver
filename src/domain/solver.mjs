@@ -1,3 +1,4 @@
+export const DEFAULT_PLATE_COUNT = 5;
 export const POSITION_COUNT = 7;
 export const MIDDLE_POSITION = Math.floor(POSITION_COUNT / 2);
 
@@ -123,9 +124,9 @@ export function solvePuzzle({
   return { status: 'unsolved', moves: [], visited: visited.size };
 }
 
-export function createDefaultPuzzle(count = 4) {
+export function createDefaultPuzzle(count = DEFAULT_PLATE_COUNT) {
   return {
-    initial: Array.from({ length: count }, (_, index) => normalizePosition(index + 1)),
+    initial: Array.from({ length: count }, () => MIDDLE_POSITION),
     target: Array.from({ length: count }, () => MIDDLE_POSITION),
     links: Array.from({ length: count }, () => []),
   };

@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { applyMove, compressMoves, solvePuzzle } from '../src/domain/solver.mjs';
+import { applyMove, compressMoves, createDefaultPuzzle, solvePuzzle } from '../src/domain/solver.mjs';
+
+test('default puzzle starts with five plates', () => {
+  assert.deepEqual(createDefaultPuzzle().initial, [3, 3, 3, 3, 3]);
+});
 
 test('a one-way actor link only applies for the selected plate', () => {
   const links = [
