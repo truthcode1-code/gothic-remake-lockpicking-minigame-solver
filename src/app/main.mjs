@@ -35,9 +35,22 @@ let puzzle = storedState.puzzle;
 let selectedActor = storedState.selectedActor;
 let helpOpen = false;
 let playbackStep = 0;
+let solutionCache = { key: '', result: null };
 
 function cloneLinks(links) {
   return links.map((effects) => effects.map((effect) => ({ ...effect })));
+}
+
+function puzzleSolutionKey() {
+  return JSON.stringify({ initial: puzzle.initial, target: puzzle.target, links: puzzle.links });
+}
+
+function currentSolution() {
+  const key = puzzleSolutionKey();
+  if (solutionCache.key !== key) {
+    solutionCache = { key, result: solvePuzzle(puzzle) };
+  }
+  return solutionCache.result;
 }
 
 function resizePuzzle(count) {
@@ -102,7 +115,7 @@ function cycleLink(actor, target) {
 }
 
 function currentShareText() {
-  const result = solvePuzzle(puzzle);
+  const result = currentSolution();
   return createShareText({
     puzzle,
     selectedActor,
@@ -275,27 +288,29 @@ function linkButton(target) {
 
 function solutionPanel(result) {
   if (result.status === 'solved' && result.moves.length === 0) {
-    return '<p class="solution-note">Already solved. Initial and correct positions match.</p>';
+    return '<div class="solution-body"><p class="solution-note">Already solved. Initial and correct positions match.</p></div>';
   }
 
   if (result.status !== 'solved') {
     const message = result.status === 'limit'
       ? `Search stopped after ${result.visited.toLocaleString()} states.`
       : `No solution found after ${result.visited.toLocaleString()} states.`;
-    return `<p class="solution-note is-warning">${message}</p>`;
+    return `<div class="solution-body"><p class="solution-note is-warning">${message}</p></div>`;
   }
 
   return `
-    ${playbackControls(result)}
-    <ol class="solution-list">
-      ${result.moves.map((move, index) => `
-        <li class="${index === playbackStep - 1 ? 'is-current' : ''}">
-          <span class="move-plate">${move.actor + 1}</span>
-          <span class="move-arrows">${formatArrows(move.direction, move.count)}</span>
-          <span class="move-count">${move.count} ${move.count === 1 ? 'step' : 'steps'}</span>
-        </li>
-      `).join('')}
-    </ol>
+    <div class="solution-body">
+      ${playbackControls(result)}
+      <ol class="solution-list">
+        ${result.moves.map((move, index) => `
+          <li class="${index === playbackStep - 1 ? 'is-current' : ''}">
+            <span class="move-plate">${move.actor + 1}</span>
+            <span class="move-arrows">${formatArrows(move.direction, move.count)}</span>
+            <span class="move-count">${move.count} ${move.count === 1 ? 'step' : 'steps'}</span>
+          </li>
+        `).join('')}
+      </ol>
+    </div>
   `;
 }
 
@@ -403,8 +418,19 @@ function supportPanel() {
   `;
 }
 
+function keepCurrentSolutionStepVisible() {
+  if (playbackStep === 0) {
+    return;
+  }
+
+  app.querySelector('.solution-list li.is-current')?.scrollIntoView({
+    block: 'nearest',
+    inline: 'nearest',
+  });
+}
+
 function render() {
-  const result = solvePuzzle(puzzle);
+  const result = currentSolution();
   playbackStep = Math.min(playbackStep, result.status === 'solved' ? result.moves.length : 0);
   const playbackPositions = getPlaybackPositions(result);
   const movingPlates = getMovingPlates(result);
@@ -453,6 +479,7 @@ function render() {
     ${helpPanel()}
   `;
   mountCoffeeButton();
+  keepCurrentSolutionStepVisible();
 }
 
 app.addEventListener('click', async (event) => {
@@ -515,7 +542,7 @@ app.addEventListener('click', async (event) => {
   }
 
   if (action === 'playback-next') {
-    const result = solvePuzzle(puzzle);
+    const result = currentSolution();
     if (result.status === 'solved') {
       playbackStep = Math.min(playbackStep + 1, result.moves.length);
       render();
