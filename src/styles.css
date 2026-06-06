@@ -146,6 +146,24 @@ h2 {
   display: flex;
   min-height: 48px;
   align-items: center;
+  justify-content: center;
+}
+
+.bmc-fallback {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #5e503f;
+  border-radius: 8px;
+  padding: 0 18px;
+  background: #c8a15d;
+  color: #171513;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .plate-stepper button:hover,
@@ -188,7 +206,7 @@ h2 {
 
 .side-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 14px;
   max-height: 100%;
 }
@@ -205,7 +223,8 @@ h2 {
 
 .plate,
 .link-editor,
-.solution-panel {
+.solution-panel,
+.support-panel {
   min-height: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -280,8 +299,14 @@ h2 {
 }
 
 .link-editor,
-.solution-panel {
+.solution-panel,
+.support-panel {
   padding: clamp(10px, 1.5vh, 16px);
+}
+
+.support-panel {
+  display: grid;
+  place-items: center;
 }
 
 .solution-panel {

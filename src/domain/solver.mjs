@@ -131,3 +131,7 @@ export function createDefaultPuzzle(count = DEFAULT_PLATE_COUNT) {
     links: Array.from({ length: count }, () => []),
   };
 }
+
+export function createResetPuzzle(puzzle) {
+  return createDefaultPuzzle(puzzle.initial.length);
+}

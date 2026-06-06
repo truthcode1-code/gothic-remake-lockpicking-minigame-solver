@@ -1,4 +1,10 @@
-import { MIDDLE_POSITION, POSITION_COUNT, createDefaultPuzzle, solvePuzzle } from '../domain/solver.mjs';
+import {
+  MIDDLE_POSITION,
+  POSITION_COUNT,
+  createDefaultPuzzle,
+  createResetPuzzle,
+  solvePuzzle,
+} from '../domain/solver.mjs';
 import { createShareText, normalizeSharePuzzle, parseShareText } from '../share/share.mjs';
 
 const app = document.querySelector('#app');
@@ -47,7 +53,7 @@ function resizePuzzle(count) {
 }
 
 function resetPuzzle() {
-  puzzle = createDefaultPuzzle();
+  puzzle = createResetPuzzle(puzzle);
   selectedActor = 0;
   saveState();
   render();
@@ -219,19 +225,25 @@ function mountCoffeeButton() {
     return;
   }
 
-  host.textContent = '';
+  host.innerHTML = '<a class="bmc-fallback" href="https://buymeacoffee.com/gothic.locksolver" target="_blank" rel="noreferrer">Buy me a coffee</a>';
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js';
   script.dataset.name = 'bmc-button';
   script.dataset.slug = 'gothic.locksolver';
-  script.dataset.color = '#FFDD00';
+  script.dataset.color = '#C8A15D';
   script.dataset.emoji = '';
-  script.dataset.font = 'Cookie';
+  script.dataset.font = 'Arial';
   script.dataset.text = 'Buy me a coffee';
-  script.dataset.outlineColor = '#000000';
-  script.dataset.fontColor = '#000000';
+  script.dataset.outlineColor = '#5E503F';
+  script.dataset.fontColor = '#171513';
   script.dataset.coffeeColor = '#ffffff';
+  script.addEventListener('load', () => {
+    const generatedButton = host.querySelector('.bmc-btn, iframe');
+    if (generatedButton) {
+      host.querySelector('.bmc-fallback')?.remove();
+    }
+  });
   host.append(script);
 }
 
@@ -246,8 +258,15 @@ function topActions() {
       <button class="reset-button" data-action="reset-puzzle" type="button">Reset</button>
       <button class="share-button" data-action="copy-share" type="button">Copy setup</button>
       <button class="share-button" data-action="paste-share" type="button">Paste setup</button>
-      <div id="coffee-button" class="coffee-button"></div>
     </div>
+  `;
+}
+
+function supportPanel() {
+  return `
+    <section class="support-panel" aria-label="Support this project">
+      <div id="coffee-button" class="coffee-button"></div>
+    </section>
   `;
 }
 
@@ -289,6 +308,7 @@ function render() {
             </div>
             ${solutionPanel(result)}
           </section>
+          ${supportPanel()}
         </aside>
       </section>
     </section>
