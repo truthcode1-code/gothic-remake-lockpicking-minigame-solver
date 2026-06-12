@@ -91,6 +91,20 @@ test('solver finds and compresses repeated moves', () => {
   assert.deepEqual(result.moves, [{ actor: 0, direction: 'right', count: 3 }]);
 });
 
+test('solver prefers the fewest displayed steps among equally short solutions', () => {
+  const result = solvePuzzle({
+    initial: [0, 0],
+    target: [1, 2],
+    links: [[], [{ target: 0, mode: 'same' }]],
+  });
+
+  assert.equal(result.status, 'solved');
+  assert.deepEqual(result.moves, [
+    { actor: 1, direction: 'right', count: 2 },
+    { actor: 0, direction: 'left', count: 1 },
+  ]);
+});
+
 test('solver can enforce actor-at-target before moving', () => {
   const result = solvePuzzle({
     initial: [1, 0],

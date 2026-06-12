@@ -120,13 +120,19 @@ export function solvePuzzle({
 
   const queue = [{ state: normalizedInitial, moves: [] }];
   const visited = new Set([stateKey(normalizedInitial)]);
+  let bestSolution = null;
+  let solutionDepth = null;
 
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const node = queue[cursor];
+    if (solutionDepth !== null && node.moves.length >= solutionDepth) {
+      break;
+    }
+
     if (visited.size > visitedLimit) {
       return { status: 'limit', moves: [], visited: visited.size };
     }
 
-    const node = queue[cursor];
     for (let actor = 0; actor < normalizedInitial.length; actor += 1) {
       if (!isActorLegalBeforeMove(node.state, normalizedTarget, actor, requireActorAtTarget)) {
         continue;
@@ -138,26 +144,37 @@ export function solvePuzzle({
           continue;
         }
 
+        const moves = [...node.moves, { actor, direction }];
+        if (sameState(nextState, normalizedTarget)) {
+          const compressed = compressMoves(moves);
+          if (
+            bestSolution === null ||
+            compressed.length < bestSolution.moves.length
+          ) {
+            bestSolution = {
+              status: 'solved',
+              moves: compressed,
+              rawMoves: moves,
+              visited: visited.size + 1,
+            };
+          }
+          solutionDepth = moves.length;
+          continue;
+        }
+
         const key = stateKey(nextState);
         if (visited.has(key)) {
           continue;
         }
 
-        const moves = [...node.moves, { actor, direction }];
-        if (sameState(nextState, normalizedTarget)) {
-          return {
-            status: 'solved',
-            moves: compressMoves(moves),
-            rawMoves: moves,
-            visited: visited.size + 1,
-          };
-        }
-
-
         visited.add(key);
         queue.push({ state: nextState, moves });
       }
     }
+  }
+
+  if (bestSolution !== null) {
+    return bestSolution;
   }
 
   return { status: 'unsolved', moves: [], visited: visited.size };
