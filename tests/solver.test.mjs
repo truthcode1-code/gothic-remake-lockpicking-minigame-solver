@@ -166,6 +166,43 @@ test('solver keeps copied setup solutions to the fewest displayed rows', () => {
   assert.deepEqual(applyCompressedMoves(puzzle.initial, result.moves, puzzle.links), puzzle.target);
 });
 
+test('solver breaks equal displayed-row and plate-switch ties by raw moves', () => {
+  const puzzle = {
+    initial: [1, 2, 5, 3, 0],
+    target: [3, 3, 3, 3, 3],
+    links: [
+      [
+        { target: 1, mode: 'opposite' },
+        { target: 2, mode: 'opposite' },
+        { target: 3, mode: 'same' },
+      ],
+      [
+        { target: 2, mode: 'opposite' },
+        { target: 3, mode: 'same' },
+        { target: 4, mode: 'opposite' },
+      ],
+      [
+        { target: 0, mode: 'same' },
+        { target: 3, mode: 'same' },
+        { target: 4, mode: 'same' },
+      ],
+      [
+        { target: 0, mode: 'same' },
+        { target: 2, mode: 'same' },
+      ],
+      [{ target: 2, mode: 'same' }],
+    ],
+  };
+
+  const result = solvePuzzle(puzzle);
+
+  assert.equal(result.status, 'solved');
+  assert.equal(result.moves.length, 12);
+  assert.equal(countPlateSwitches(result.moves), 11);
+  assert.equal(result.rawMoves.length, 38);
+  assert.deepEqual(applyCompressedMoves(puzzle.initial, result.moves, puzzle.links), puzzle.target);
+});
+
 test('solver can enforce actor-at-target before moving', () => {
   const result = solvePuzzle({
     initial: [1, 0],

@@ -41,6 +41,10 @@ function stateKey(state) {
   return state.join(',');
 }
 
+function searchKey(state, lastActor) {
+  return `${stateKey(state)}|${lastActor ?? 'none'}`;
+}
+
 function sameState(a, b) {
   return a.length === b.length && a.every((value, index) => value === b[index]);
 }
@@ -121,6 +125,93 @@ function isBetterSolution(candidate, current) {
   return candidate.rawMoves.length < current.rawMoves.length;
 }
 
+function compareSearchNodes(a, b) {
+  if (a.moves.length !== b.moves.length) {
+    return a.moves.length - b.moves.length;
+  }
+
+  if (a.plateSwitches !== b.plateSwitches) {
+    return a.plateSwitches - b.plateSwitches;
+  }
+
+  return a.rawMoveCount - b.rawMoveCount;
+}
+
+function isBetterSearchNode(candidate, current) {
+  return current === undefined || compareSearchNodes(candidate, current) < 0;
+}
+
+class MinHeap {
+  #items = [];
+
+  get size() {
+    return this.#items.length;
+  }
+
+  push(item) {
+    this.#items.push(item);
+    this.#bubbleUp(this.#items.length - 1);
+  }
+
+  pop() {
+    if (this.#items.length === 0) {
+      return null;
+    }
+
+    const item = this.#items[0];
+    const last = this.#items.pop();
+    if (this.#items.length > 0) {
+      this.#items[0] = last;
+      this.#bubbleDown(0);
+    }
+
+    return item;
+  }
+
+  #bubbleUp(index) {
+    let current = index;
+    while (current > 0) {
+      const parent = Math.floor((current - 1) / 2);
+      if (compareSearchNodes(this.#items[current], this.#items[parent]) >= 0) {
+        break;
+      }
+
+      [this.#items[current], this.#items[parent]] = [this.#items[parent], this.#items[current]];
+      current = parent;
+    }
+  }
+
+  #bubbleDown(index) {
+    let current = index;
+    while (true) {
+      const left = current * 2 + 1;
+      const right = left + 1;
+      let smallest = current;
+
+      if (
+        left < this.#items.length &&
+        compareSearchNodes(this.#items[left], this.#items[smallest]) < 0
+      ) {
+        smallest = left;
+      }
+
+      if (
+        right < this.#items.length &&
+        compareSearchNodes(this.#items[right], this.#items[smallest]) < 0
+      ) {
+        smallest = right;
+      }
+
+      if (smallest === current) {
+        break;
+      }
+
+      [this.#items[current], this.#items[smallest]] = [this.#items[smallest], this.#items[current]];
+      current = smallest;
+    }
+  }
+}
+
 export function defaultMaxVisitedForPlateCount(count) {
   if (count >= 8) {
     return 5000000;
@@ -155,18 +246,36 @@ export function solvePuzzle({
     return { status: 'solved', moves: [], visited: 1 };
   }
 
-  const queue = [{ state: normalizedInitial, moves: [], rawMoveCount: 0 }];
-  const visited = new Set([stateKey(normalizedInitial)]);
-  let bestSolution = null;
+  const start = {
+    state: normalizedInitial,
+    moves: [],
+    rawMoveCount: 0,
+    plateSwitches: 0,
+    lastActor: null,
+  };
+  const queue = new MinHeap();
+  queue.push(start);
 
-  for (let cursor = 0; cursor < queue.length; cursor += 1) {
-    const node = queue[cursor];
-    if (bestSolution !== null && node.moves.length >= bestSolution.moves.length) {
-      break;
+  const bestByState = new Map([[searchKey(start.state, start.lastActor), start]]);
+
+  while (queue.size > 0) {
+    const node = queue.pop();
+    const nodeKey = searchKey(node.state, node.lastActor);
+    if (bestByState.get(nodeKey) !== node) {
+      continue;
     }
 
-    if (visited.size > visitedLimit) {
-      return { status: 'limit', moves: [], visited: visited.size };
+    if (sameState(node.state, normalizedTarget)) {
+      return {
+        status: 'solved',
+        moves: node.moves,
+        rawMoves: expandCompressedMoves(node.moves),
+        visited: bestByState.size,
+      };
+    }
+
+    if (bestByState.size > visitedLimit) {
+      return { status: 'limit', moves: [], visited: bestByState.size };
     }
 
     for (let actor = 0; actor < normalizedInitial.length; actor += 1) {
@@ -187,37 +296,29 @@ export function solvePuzzle({
           }
 
           const moves = [...node.moves, { actor, direction, count }];
-          const rawMoveCount = node.rawMoveCount + count;
-          if (sameState(nextState, normalizedTarget)) {
-            const candidate = {
-              status: 'solved',
-              moves,
-              rawMoves: expandCompressedMoves(moves),
-              visited: visited.size + 1,
-            };
-            if (isBetterSolution(candidate, bestSolution)) {
-              bestSolution = candidate;
-            }
+          const nextNode = {
+            state: nextState,
+            moves,
+            rawMoveCount: node.rawMoveCount + count,
+            plateSwitches: node.plateSwitches + (
+              node.lastActor !== null && node.lastActor !== actor ? 1 : 0
+            ),
+            lastActor: actor,
+          };
+
+          const key = searchKey(nextState, actor);
+          if (!isBetterSearchNode(nextNode, bestByState.get(key))) {
             continue;
           }
 
-          const key = stateKey(nextState);
-          if (visited.has(key)) {
-            continue;
-          }
-
-          visited.add(key);
-          queue.push({ state: nextState, moves, rawMoveCount });
+          bestByState.set(key, nextNode);
+          queue.push(nextNode);
         }
       }
     }
   }
 
-  if (bestSolution !== null) {
-    return bestSolution;
-  }
-
-  return { status: 'unsolved', moves: [], visited: visited.size };
+  return { status: 'unsolved', moves: [], visited: bestByState.size };
 }
 
 export function createDefaultPuzzle(count = DEFAULT_PLATE_COUNT) {
