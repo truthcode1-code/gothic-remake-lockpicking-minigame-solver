@@ -93,6 +93,34 @@ function expandCompressedMoves(moves) {
   );
 }
 
+export function countPlateSwitches(moves) {
+  return moves.reduce((switches, move, index) => {
+    if (index === 0 || moves[index - 1].actor === move.actor) {
+      return switches;
+    }
+
+    return switches + 1;
+  }, 0);
+}
+
+function isBetterSolution(candidate, current) {
+  if (current === null) {
+    return true;
+  }
+
+  if (candidate.moves.length !== current.moves.length) {
+    return candidate.moves.length < current.moves.length;
+  }
+
+  const candidateSwitches = countPlateSwitches(candidate.moves);
+  const currentSwitches = countPlateSwitches(current.moves);
+  if (candidateSwitches !== currentSwitches) {
+    return candidateSwitches < currentSwitches;
+  }
+
+  return candidate.rawMoves.length < current.rawMoves.length;
+}
+
 export function defaultMaxVisitedForPlateCount(count) {
   if (count >= 8) {
     return 5000000;
@@ -161,17 +189,14 @@ export function solvePuzzle({
           const moves = [...node.moves, { actor, direction, count }];
           const rawMoveCount = node.rawMoveCount + count;
           if (sameState(nextState, normalizedTarget)) {
-            if (
-              bestSolution === null ||
-              moves.length < bestSolution.moves.length ||
-              (moves.length === bestSolution.moves.length && rawMoveCount < bestSolution.rawMoves.length)
-            ) {
-              bestSolution = {
-                status: 'solved',
-                moves,
-                rawMoves: expandCompressedMoves(moves),
-                visited: visited.size + 1,
-              };
+            const candidate = {
+              status: 'solved',
+              moves,
+              rawMoves: expandCompressedMoves(moves),
+              visited: visited.size + 1,
+            };
+            if (isBetterSolution(candidate, bestSolution)) {
+              bestSolution = candidate;
             }
             continue;
           }

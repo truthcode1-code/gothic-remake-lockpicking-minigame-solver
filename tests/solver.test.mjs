@@ -6,6 +6,7 @@ import {
   applyCompressedMove,
   applyCompressedMoves,
   compressMoves,
+  countPlateSwitches,
   createDefaultPuzzle,
   createResetPuzzle,
   defaultMaxVisitedForPlateCount,
@@ -128,6 +129,40 @@ test('solver prefers grouped repeated moves over shorter noisy raw paths', () =>
 
   assert.equal(result.status, 'solved');
   assert.equal(result.moves.length, 9);
+  assert.deepEqual(applyCompressedMoves(puzzle.initial, result.moves, puzzle.links), puzzle.target);
+});
+
+test('solver keeps copied setup solutions to the fewest displayed rows', () => {
+  const puzzle = {
+    initial: [3, 2, 6, 1, 4],
+    target: [3, 3, 3, 3, 3],
+    links: [
+      [
+        { target: 1, mode: 'opposite' },
+        { target: 2, mode: 'opposite' },
+      ],
+      [
+        { target: 0, mode: 'same' },
+        { target: 3, mode: 'opposite' },
+      ],
+      [
+        { target: 3, mode: 'same' },
+        { target: 1, mode: 'same' },
+        { target: 0, mode: 'opposite' },
+      ],
+      [
+        { target: 4, mode: 'same' },
+        { target: 0, mode: 'opposite' },
+      ],
+      [{ target: 2, mode: 'opposite' }],
+    ],
+  };
+
+  const result = solvePuzzle(puzzle);
+
+  assert.equal(result.status, 'solved');
+  assert.equal(result.moves.length, 9);
+  assert.equal(countPlateSwitches(result.moves), 8);
   assert.deepEqual(applyCompressedMoves(puzzle.initial, result.moves, puzzle.links), puzzle.target);
 });
 
