@@ -84,6 +84,15 @@ export function applyCompressedMoves(state, moves, links) {
   return next;
 }
 
+function expandCompressedMoves(moves) {
+  return moves.flatMap((move) =>
+    Array.from({ length: move.count }, () => ({
+      actor: move.actor,
+      direction: move.direction,
+    })),
+  );
+}
+
 export function defaultMaxVisitedForPlateCount(count) {
   if (count >= 8) {
     return 5000000;
@@ -118,14 +127,13 @@ export function solvePuzzle({
     return { status: 'solved', moves: [], visited: 1 };
   }
 
-  const queue = [{ state: normalizedInitial, moves: [] }];
+  const queue = [{ state: normalizedInitial, moves: [], rawMoveCount: 0 }];
   const visited = new Set([stateKey(normalizedInitial)]);
   let bestSolution = null;
-  let solutionDepth = null;
 
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const node = queue[cursor];
-    if (solutionDepth !== null && node.moves.length >= solutionDepth) {
+    if (bestSolution !== null && node.moves.length >= bestSolution.moves.length) {
       break;
     }
 
@@ -139,36 +147,43 @@ export function solvePuzzle({
       }
 
       for (const direction of ['left', 'right']) {
-        const nextState = applyMove(node.state, actor, direction, links);
-        if (nextState === null) {
-          continue;
-        }
-
-        const moves = [...node.moves, { actor, direction }];
-        if (sameState(nextState, normalizedTarget)) {
-          const compressed = compressMoves(moves);
-          if (
-            bestSolution === null ||
-            compressed.length < bestSolution.moves.length
-          ) {
-            bestSolution = {
-              status: 'solved',
-              moves: compressed,
-              rawMoves: moves,
-              visited: visited.size + 1,
-            };
+        let nextState = node.state;
+        for (let count = 1; count < POSITION_COUNT; count += 1) {
+          if (!isActorLegalBeforeMove(nextState, normalizedTarget, actor, requireActorAtTarget)) {
+            break;
           }
-          solutionDepth = moves.length;
-          continue;
-        }
 
-        const key = stateKey(nextState);
-        if (visited.has(key)) {
-          continue;
-        }
+          nextState = applyMove(nextState, actor, direction, links);
+          if (nextState === null) {
+            break;
+          }
 
-        visited.add(key);
-        queue.push({ state: nextState, moves });
+          const moves = [...node.moves, { actor, direction, count }];
+          const rawMoveCount = node.rawMoveCount + count;
+          if (sameState(nextState, normalizedTarget)) {
+            if (
+              bestSolution === null ||
+              moves.length < bestSolution.moves.length ||
+              (moves.length === bestSolution.moves.length && rawMoveCount < bestSolution.rawMoves.length)
+            ) {
+              bestSolution = {
+                status: 'solved',
+                moves,
+                rawMoves: expandCompressedMoves(moves),
+                visited: visited.size + 1,
+              };
+            }
+            continue;
+          }
+
+          const key = stateKey(nextState);
+          if (visited.has(key)) {
+            continue;
+          }
+
+          visited.add(key);
+          queue.push({ state: nextState, moves, rawMoveCount });
+        }
       }
     }
   }

@@ -105,6 +105,32 @@ test('solver prefers the fewest displayed steps among equally short solutions', 
   ]);
 });
 
+test('solver prefers grouped repeated moves over shorter noisy raw paths', () => {
+  const puzzle = {
+    initial: [0, 2, 6, 5, 4],
+    target: [3, 3, 3, 3, 3],
+    links: [
+      [{ target: 3, mode: 'opposite' }],
+      [{ target: 3, mode: 'opposite' }],
+      [
+        { target: 0, mode: 'same' },
+        { target: 4, mode: 'opposite' },
+      ],
+      [{ target: 4, mode: 'same' }],
+      [
+        { target: 0, mode: 'same' },
+        { target: 1, mode: 'same' },
+      ],
+    ],
+  };
+
+  const result = solvePuzzle(puzzle);
+
+  assert.equal(result.status, 'solved');
+  assert.equal(result.moves.length, 9);
+  assert.deepEqual(applyCompressedMoves(puzzle.initial, result.moves, puzzle.links), puzzle.target);
+});
+
 test('solver can enforce actor-at-target before moving', () => {
   const result = solvePuzzle({
     initial: [1, 0],
